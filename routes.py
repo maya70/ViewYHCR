@@ -1,4 +1,3 @@
-import pandas as pd
 from flask import Flask, render_template, send_from_directory, jsonify, send_file
 import csv
 

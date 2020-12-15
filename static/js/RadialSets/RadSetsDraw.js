@@ -155,11 +155,12 @@ var RadSet = (function (window, document, $, undefined) {
             var c = sortedCatList[i];
             if (selectedCatList[c.Name] !== undefined) {
                 var selC = selectedCatList[c.Name];
+                // selC = "General_finding_of_soft_tissue"
                 var p = (selC.Count / c.Count * 100).toFixed(2) + "%";
                 var el = $("#" + options.DivSetOfCardinalityID + " ." + c.Name);
                 el.addClass("HighLight");
                 el.find(".InnerMeter").css("width", p);
-
+               
                 //update selected in tooltip
                 var title = el.parent().attr("title");
                 title = title.substring(0, title.indexOf("(")) + "(" + selC.Count + " selected)";

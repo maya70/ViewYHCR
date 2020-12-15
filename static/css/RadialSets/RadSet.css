@@ -159,38 +159,32 @@ body, body .content
 .Sector
 {
     fill: #B8D8F2;
-}
+}*/
 
-.Histogram.Degree-1
+/*.Histogram.Degree-1
 {
-    fill: #278EF2;
+    fill: #fd913d;
 }
 
 .Histogram.Degree-2
 {
-    fill: #1D69B2;
+    fill: #febc57;
 }
 
 .Histogram.Degree-3
 {
-    fill: #113C66;
+    fill: #fedd80;
 }
 
 .Histogram.Degree-4
 {
-    fill: #134373;
+    fill: #ffeda0;
 }
 
 .Histogram.Degree-5
 {
-    fill: #0C2D4C;
-}
-
-.Histogram.Degree-6
-{
-    fill: #0B2845;
-}
-*/
+    fill: #ffefa6;
+}*/
 .ui-widget-header{
     background-color: #B3D4FC !important;
     border-color: #B3D4FC !important;

@@ -29,9 +29,11 @@ var m = [60, 0, 10, 0],
     excluded_groups = [];
 
 var colors = {
-  "M": '#66c2a5', // [166,206,227],
-  "F": '#fc8d62', //[178,223,138],
-  "N": '#8da0cb', // [251,154,153], , , 
+   "S": '#66c2a5',
+    "NS": '#fc8d62'
+  //"M": '#66c2a5', // [166,206,227],
+  //"F": '#fc8d62', //[178,223,138],
+  // "N": '#8da0cb', // [251,154,153], , , 
   /*"APV": '#fdbf6f', //[253,191,111],
   "AIPV":'#cab2d6', //[202,178,214],
   "Untreated": '#ffff99', // [255,255,153]
@@ -52,10 +54,14 @@ var colors2 = {
   "Untreated": '#b15928' // [255,255,153]
 };
 
-var categories = {
+/* var categories = {
   "1": "M",
   "2": "F",
   "3": "N"
+};*/
+var categories = {
+  "1": "S",
+  "2": "NS"
 };
 
 var conditions_at_0 = {};
@@ -168,14 +174,20 @@ var svg = d3.select("#svg1")
     return d;
   });*/
 // TODO: Change the data path -- Done
-// Statin_Diab
-d3.csv("../static/data/t2dcomorbids_lineage.csv", function(comorbids) {
+// Statin_Diab.csv
+
+d3.csv("../static/data/StatinConsuming_PersonIDs.csv", function(statin) {
+  console.log(statin);
+d3.csv("../static/data/t2d_9.csv", function(comorbids) {
   console.log(comorbids);
   var precs = create_patient_recs_at_max_sep(comorbids);
   console.log(precs);
   var unique_conditions = create_unique_conditions(precs);
   console.log(unique_conditions);
-  data = create_data(precs, unique_conditions);
+  data = create_data(statin, precs, unique_conditions);
+  var threshold = 15
+  data = trunc_threshold(data, unique_conditions, threshold)
+  
 
 
 /*
@@ -190,15 +202,16 @@ dimensions2.append("g")
 
 
 */
-
+console.log('Here 1');
 var dims = Object.keys(data[0]);
 console.log(data); 
 
 /*for(var i =0; i < 40; i++){
   var chunk = data.slice(i*50, (i+1)*50);
-
-handleJSON('./submit.php', function(){},
+  console.log('Here 2');
+handleJSON('../static/php/submit.php', function(){},
                         {
+                          
                           type: 'POST',
                                     data: {
                                        "data": chunk 
@@ -369,11 +382,14 @@ handleJSON('./submit.php', function(){},
   brush();
 
   });
-
+});
+// Global
+// creating a conditions list
+var unique_conditions_length = [];
 function create_unique_conditions(precs){
       var unique_conditions = {};
       var unique_condition_ids = {};
-      var unique_conditions_length = [];
+
       for(var p in precs){
         for(key in precs[p]['concepts'])
         {
@@ -384,45 +400,63 @@ function create_unique_conditions(precs){
         }
       }
 
-      
-      // delete unique_conditions['Finding of head and neck region'];
-
+      // makes an array pf dictionaries, with each condition and its size, i.e., frequency 
       for(k in unique_conditions){
         tempDict = {}
         tempDict['concept'] = k;
         tempDict['length'] = unique_conditions[k]['length'];
         unique_conditions_length.push(tempDict); 
-
-        
-          // console.log('length');
-          // console.log(k, unique_conditions[k]['length'])
       }
 
+    // sorts the condition list
     unique_conditions_length.sort(function(a, b) {
-     return a.length - b.length;
+      return b.length - a.length;
     }); 
     
     console.log('unique_conditions_length : ', unique_conditions_length)
-    //console.log('unique_conditions_length reverse : ', unique_conditions_length.reverse(unique_conditions_length.values))
-    //console.log(Object.keys(unique_conditions_length).length);
-
-    //for(i = 10; i < Object.keys(unique_conditions_length).length; ++i){
-      // console.log(unique_conditions_length[i].concept);
-      //delete unique_conditions[unique_conditions_length[i].concept];
-   // }
+    // This was reversing the list before
+    // console.log('unique_conditions_length reverse : ', unique_conditions_length.reverse(unique_conditions_length.values))
+   
+    // deleting all the unique condition records expect for the top 10 conditions of the sorted list
+   /* for(i = 10; i < Object.keys(unique_conditions_length).length; ++i){
+      delete unique_conditions[unique_conditions_length[i].concept];
+    }*/
       
       console.log('unique_conditions')
       console.log(unique_conditions);
       return unique_conditions;
     }
 
+
+    function trunc_threshold(data, unique_conditions, threshold){
+      var ordered_keys = [];
+      for(var u=0;u < unique_conditions_length.length; u++){
+        ordered_keys.push(unique_conditions_length[u]['concept']);
+      }
+      var included = ["age", "person_id", "gender", "statin"];
+      for(var p=0; p < data.length; p++){
+        for(var key in data[p]){
+          if(included.indexOf(key) <0){ // this is not one of the person_id, age or gender keys
+            // check the rank of this condition
+            var rank = ordered_keys.indexOf(key);
+            if(rank >= threshold)
+              delete data[p][key];
+          }
+        }
+      }
+      return data;
+    }
+    
+
     function handleJSON(url, callback, params){
+      console.log('Here 3');
       var call, config, count = 0;
     config = {
         dataType: 'json',
         url: url,
         async: false,
         error: function(jqXHR, textStatus, errorThrown) {
+          console.log(textStatus, errorThrown);
             if ('timeout' === textStatus) {
                 call();}
             else {
@@ -438,7 +472,7 @@ function create_unique_conditions(precs){
     call();
     }
 
-    function create_data(precs, unique_conditions){
+    function create_data(statin, precs, unique_conditions){
       var data = [];
       var idxcounts = {};
       for(var cond in unique_conditions){
@@ -451,17 +485,44 @@ function create_unique_conditions(precs){
         tmp['person_id'] = p;
         tmp['age'] = parseInt(precs[p]['age']);
         tmp['gender'] = precs[p]['gender'];
+        tmp['statin'] = 'NS';
         for(var cond in unique_conditions){
           tmp[cond]= 0;
+          // new column = ancestor_name_desc
+          cond_desc = cond + '_desc'
+          tmp[cond_desc] = []
           if(unique_conditions[cond].indexOf(p) >=0 ){
             tmp[cond] = idxcounts[cond] + parseInt(unique_conditions[cond].length *0.7);
+            
+              for(var concept in precs[p]['concepts']){
+                if(precs[p]['concepts'][concept]['ancestor_name'] === cond){
+                  tmp[cond_desc].push(precs[p]['concepts'][concept]['concept_name'])
+                }
+              }
             idxcounts[cond]++;
-          }
+            }
+          
         }
         data.push(tmp);
       }
+
+      // change 2
+      // Updating Statin Column according to the person_id
+      for(var d in data){
+        
+        for(var s in statin){
+          if(data[d]["person_id"] === statin[s]["person_id"]){
+            data[d]["statin"] = 'S';
+            break;
+          }
+          
+      }
+    
+    }
+      console.log('data : ', data);
       return data; 
     }
+    
     function create_patient_recs_at_max_sep(comorbids){
      
       var records = {};
@@ -470,6 +531,7 @@ function create_unique_conditions(precs){
         var person_id = comorbids[c]['person_id'];
         var seplevel = parseInt(comorbids[c]['seplevel']);
         var concept_id = comorbids[c]['concept_id'];
+        var concept_name = comorbids[c]['concept_name'];
 
         if(!records[person_id]){ // add a new patient
            records[person_id] = {};
@@ -482,6 +544,7 @@ function create_unique_conditions(precs){
           records[person_id]['concepts'][concept_id]['seplevel'] =seplevel;
           records[person_id]['concepts'][concept_id]['ancestor_id'] = comorbids[c]['ancestor_id'];
           records[person_id]['concepts'][concept_id]['ancestor_name'] = comorbids[c]['ancestor_name'];
+          records[person_id]['concepts'][concept_id]['concept_name'] = comorbids[c]['concept_name'];
         }
 
         if(records[person_id]['concepts'][concept_id]['seplevel'] < seplevel ){
@@ -489,21 +552,24 @@ function create_unique_conditions(precs){
           records[person_id]['concepts'][concept_id]['ancestor_id'] = comorbids[c]['ancestor_id'];
           records[person_id]['concepts'][concept_id]['ancestor_name'] = comorbids[c]['ancestor_name'];
           records[person_id]['concepts'][concept_id]['seplevel'] = seplevel;
+          records[person_id]['concepts'][concept_id]['concept_name'] = concept_name;
         }
         
       }
 
       // remove lower separation levels
-      for(var person_id in records){
+      /*for(var person_id in records){
         for(var concept_id in records[person_id]['concepts'] ){
-            if(records[person_id]['concepts'][concept_id]['seplevel'] < 10)
+            if(records[person_id]['concepts'][concept_id]['seplevel'] < 0)
             {
                 records[person_id]['concepts'][concept_id]['ancestor_id'] = 'other';
                 records[person_id]['concepts'][concept_id]['ancestor_name'] = 'other';
+                records[person_id]['concepts'][concept_id]['concept_name'] = 'other';
                 
             }
         }
-      }
+      }*/
+      console.log('records : ', records)
       return records;
     }
 
@@ -572,6 +638,7 @@ function create_legend(colors,brush) {
         } else {
           d3.select(this).attr("title", "Show group")
           excluded_groups.push(d);
+          console.log('excluded_groups : ', excluded_groups)
           brush();
         }
       });
@@ -598,7 +665,11 @@ function create_legend(colors,brush) {
 // render polylines i to i+render_speed 
 function render_range(selection, i, max, opacity) {
   selection.slice(i,max).forEach(function(d) {
-     var col = (d.Organ === 'Tumor')? color2(d.Therapy,opacity) : color(d.gender,opacity);
+    // change 3
+     // var col = (d.Organ === 'Tumor')? color2(d.Therapy,opacity) : color(d.gender,opacity);
+     // var col = (d.Organ === 'Tumor')? color2(d.Therapy,opacity) : color(d.gender,opacity);
+     // console.log('opacity : ', opacity)
+     var col = (d.Organ === 'Tumor')? color2(d.Therapy,opacity) : color(d.statin,opacity);
     path(d, foreground,col);
   });
 };
@@ -623,13 +694,34 @@ function data_table(sample) {
     .append("span")
       .attr("class", "color-block")
       .style("background", function(d) { 
-        var col = color(d.gender,0.85); 
+        // var col = color(d.gender,0.85); 
+        var col = color(d.statin,0.85); 
         return col; })
 
   table
     .append("span")
       .text(function(d) { 
-        return d.gender + ", Formula: " + d['Any_baby_formula'] + ", Eggs: " + d['Eggs'] ; })
+        // console.log('d,',d)
+        var concept_desc = [];
+        var res = "Gender : " + d.gender;
+        res = res +  ", Conditions";
+        var des = '';
+        var cond = '';
+        var num_of_cond = 0;
+        for(var u=0;u < unique_conditions_length.length; u++){  
+          des = unique_conditions_length[u]['concept'] + "_desc";
+          if(d[des].length > 0){
+            // d[des] = list of all the concepts in one ancestor
+            // res = res + "; " + unique_conditions_length[u]['concept'] + " includes "+ d[des];
+            if(num_of_cond > 1){
+              cond = cond + ", "
+            }
+             cond = cond + " " + d[des];
+             num_of_cond = num_of_cond + d[des].length
+          }
+        }
+        res = res + " (" + num_of_cond + ") : " + cond;
+        return res; })
 }
 
 // Adjusts rendering speed 
@@ -660,7 +752,8 @@ function selection_stats(opacity, n, total) {
 function highlight(d) {
   d3.select("#foreground").style("opacity", "0.25");
   d3.selectAll(".row").style("opacity", function(p) { return (d.Therapy == p) ? null : "0.3" });
-  var col = (d.Organ === 'Tumor')? color2(d.Therapy,1) : color(d.Therapy,1);
+  // var col = (d.Organ === 'Tumor')? color2(d.Therapy,1) : color(d.Therapy,1);
+  var col = (d.Organ === 'Tumor')? color2(d.Therapy,1) : color(d.statin,2);
   path(d, highlighted, col);
 }
 
@@ -699,6 +792,7 @@ function color(d,a) {
   //return ["hsla(",c[0],",",c[1],"%,",c[2],"%,",a,")"].join("");
     if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)){
         c= hex.substring(1).split('');
+        
         if(c.length== 3){
             c= [c[0], c[0], c[1], c[1], c[2], c[2]];
         }
@@ -771,7 +865,8 @@ function brush() {
     .filter(function(d) {
        var result = true;
       excluded_groups.forEach(function(group){
-        if(group === d.gender) result = false; 
+        // if(group === d.gender) result = false; 
+        if(group === d.statin) result = false; 
       }); 
       // var inc = !(_.contains(excluded_groups, d.Therapy) &&   );
       return result;
@@ -798,20 +893,29 @@ function brush() {
 
   // total by Medicare status
   
-var hash = {"M": 0,
+/*var hash = {"M": 0,
             "F": 1, 
             "N": 2
+            };*/
+
+// change 1
+var hash = {"NS": 0,
+            "S": 1
             };
 
   var tallies = {}; // _(selected).groupBy(function(d) {return d.Therapy;});
-  tallies['M'] = [];
+  /*tallies['M'] = [];
   tallies['F'] = [];
-  tallies['N'] = [];
+  tallies['N'] = [];*/
+  tallies['NS'] = [];
+  tallies['S'] = [];
   
   
 
   _(selected).forEach(function(obj){
-      var cat = ''+ obj.gender;
+      // var cat = ''+ obj.gender;
+      var cat = ''+ obj.statin;
+      // console.log('cat : ', cat)
       //if(obj.Organ === 'Tumor'){
       //    cat += ' Tumor';
       //}
@@ -833,7 +937,7 @@ var hash = {"M": 0,
 
   legend.selectAll(".color-bar")
     .style("width", function(d) {
-      return Math.ceil(600*tallies[d].length/data.length) + "px"
+      return Math.ceil(100*tallies[d].length/data.length) + "px"
     });
 
   legend.selectAll(".tally")
@@ -949,7 +1053,8 @@ function actives() {
   var selected = [];
   data
     .filter(function(d) {
-      return !_.contains(excluded_groups, d.gender);
+      // return !_.contains(excluded_groups, d.gender);
+      return !_.contains(excluded_groups, d.statin);
     })
     .map(function(d) {
     return actives.every(function(p, i) {

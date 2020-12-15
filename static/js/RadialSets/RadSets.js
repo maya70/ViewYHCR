@@ -28,10 +28,10 @@ var RadSet = (function (window, document, $, undefined) {
         Maximum Number of Entries
         @property EntryLimit
         @type Integer
-        @default 2000
+        @default 4000
         @for Options
         **/
-        EntryLimit: 2000,
+        EntryLimit: 4000,
         /**
         Idicates if the selected entities will be writen in the log
         @property LogSelectionEntries
@@ -76,10 +76,10 @@ var RadSet = (function (window, document, $, undefined) {
         List of Property displayed in the Selected Entries View
         @property ListOfVisableProps
         @type List<String>
-        @default ["person_id","age","gender", "Sets"]
+        @default ["person_id", "age", "gender", "Sets"]
         @for Options
         */
-        ListOfVisableProps: ["person_id","age","gender", "Sets"],
+        ListOfVisableProps: ["gender", "statin", "Sets"],
         /**
         List of NonCategoires in CSV File
         @property ListOfNonCategories
@@ -87,7 +87,7 @@ var RadSet = (function (window, document, $, undefined) {
         @default ["other"]
         @for Options
         */
-        ListOfNonCategories: ["person_id","age","gender", "other"],
+        ListOfNonCategories: ["person_id", "age", "gender", "statin", "other"],
         /**
         List of Histogram Colors 
         @property HistoColors
@@ -148,7 +148,7 @@ var RadSet = (function (window, document, $, undefined) {
         @property CategoryOrder
         @type List<String>
         @for Options
-        @default ["Finding_of_head_and_neck_region", "Musculoskeletal_finding","Finding_of_upper_trunk", "General_finding_of_observation_of_patient", "Clinical_finding", "Inflammatory_disorder", "Integumentary_system_finding", "Measurement_finding", "General_finding_of_soft_tissue", "Finding_of_limb_structure", "Abdominal_organ_finding", "Cognitive_function_finding", "Disorder_of_abdomen", "Respiratory_finding", "Sensory_nervous_system_finding", "Neurological_lesion"]
+        @default ["Finding_of_upper_trunk", "General_finding_of_soft_tissue", "Integumentary_system_finding", "Finding_of_head_and_neck_region", "Inflammatory_disorder", "Musculoskeletal_finding", "General_finding_of_observation_of_patient", "Abdominal_organ_finding", "Clinical_finding", "Measurement_finding", "Cognitive_function_finding", "Finding_of_limb_structure", "Sensory_nervous_system_finding", "Disorder_due_to_infection", "Disorder_of_abdomen"] 
         */
         CategoryOrder: [], //["Finding_of_head_and_neck_region", "Musculoskeletal_finding","Finding_of_upper_trunk", "General_finding_of_observation_of_patient", "Clinical_finding", "Inflammatory_disorder", "Integumentary_system_finding", "Measurement_finding", "General_finding_of_soft_tissue", "Finding_of_limb_structure", "Abdominal_organ_finding", "Cognitive_function_finding", "Disorder_of_abdomen", "Respiratory_finding", "Sensory_nervous_system_finding", "Neurological_lesion"],
         /**

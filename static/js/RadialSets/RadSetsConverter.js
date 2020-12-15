@@ -419,6 +419,7 @@ var RadSet = (function (window, document, $, undefined) {
                 //$("#divPlainText").text(data);
                 allTextLines = data.split(/\r\n|\n/);
                 // window.alert(allTextLines);
+                // ConvertCSVtoObjects(allTextLines, ";");
                 ConvertCSVtoObjects(allTextLines, ";");
             },
             error: function (xhr) {

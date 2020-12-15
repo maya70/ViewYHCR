@@ -46,7 +46,8 @@ $(function () {
 
                 var options = {
                     File: "YHCR_Diabetes_Comorbidities.csv",
-                    EntryLimit: 2000,
+                    // File: "3322.csv",
+                    EntryLimit: 4000,
                     TableSelectedEntitiesID: "tabSelEntities",
                     DivSetOfCardinalityID: "setOfCardinality",
                     DivElementsByDegreeID: "elementsByDegree",
@@ -63,6 +64,7 @@ $(function () {
                 }
 
                 var fileName = $("#selFiles").val();
+                console.log('filename : ', fileName)
                 options.File = $("#selFiles").val();
 
 

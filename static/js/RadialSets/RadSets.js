@@ -87,7 +87,8 @@ var RadSet = (function (window, document, $, undefined) {
         @default ["other"]
         @for Options
         */
-        ListOfNonCategories: ["person_id", "age", "gender", "statin", "other"],
+        ListOfNonCategories: ["person_id", "age", "gender", "statin", "other", "Cognitive_function_finding", "Disorder_due_to_infection", 
+        "Disorder_of_abdomen", "Abdominal_organ_finding", "Finding_of_limb_structure"],
         /**
         List of Histogram Colors 
         @property HistoColors

@@ -42,6 +42,10 @@ def radialTool():
 def dataTest():
     return render_template('test.html', the_title='Parallel Sets')
 
+@app.route('/templates/test_paral.html')
+def testParallelTool():
+    return render_template('test_paral.html', the_title='Parallel Sets')
+
 @app.route('/templates/schemaExp.html')
 def dataSchema():
     return render_template('schemaExp.html', the_title='Data Schema')

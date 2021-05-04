@@ -176,6 +176,8 @@ var svg = d3.select("#svg1")
 // TODO: Change the data path -- Done
 // Statin_Diab.csv
 
+d3.csv("../static/data/dead.csv", function(dead) {
+    console.log(dead);
 d3.csv("../static/data/StatinConsuming_PersonIDs.csv", function(statin) {
   console.log(statin);
 d3.csv("../static/data/t2d_9.csv", function(comorbids) {
@@ -184,7 +186,7 @@ d3.csv("../static/data/t2d_9.csv", function(comorbids) {
   console.log(precs);
   var unique_conditions = create_unique_conditions(precs);
   console.log(unique_conditions);
-  data = create_data(statin, precs, unique_conditions);
+  data = create_data(dead, statin, precs, unique_conditions);
   var threshold = 15
   data = trunc_threshold(data, unique_conditions, threshold)
 
@@ -383,6 +385,7 @@ handleJSON('../static/php/submit.php', function(){},
 
   });
 });
+});
 // Global
 // creating a conditions list
 var unique_conditions_length = [];
@@ -472,7 +475,7 @@ function create_unique_conditions(precs){
     call();
     }
 
-    function create_data(statin, precs, unique_conditions){
+    function create_data(dead, statin, precs, unique_conditions){
       dict_length = {}
       for(var len in unique_conditions_length){
         dict_length[unique_conditions_length[len]['concept']] = unique_conditions_length[len]['length']
@@ -492,6 +495,7 @@ function create_unique_conditions(precs){
         tmp['age'] = parseInt(precs[p]['age']);
         tmp['gender'] = precs[p]['gender'];
         tmp['statin'] = 'NS';
+        tmp['dead'] = 'ND';
         for(var cond in unique_conditions){
           tmp[cond]= 0;
           var size = dict_length[cond]
@@ -512,6 +516,14 @@ function create_unique_conditions(precs){
               }
             }
 
+            /*for(var d in dead){
+                if(p === dead[d]["person_id"]){
+                  tmp["dead"] = 'D';
+                  // console.log('statin user : ', p)
+                  break;
+                }
+              }*/
+
             if(tmp["statin"] === 'S'){
               tmp[cond] =  size - (idxcounts[cond]) + 50;
               idxcounts[cond]++;
@@ -520,6 +532,8 @@ function create_unique_conditions(precs){
               tmp[cond] =  50 + idxcounts_ns[cond];
               idxcounts_ns[cond]++
             }
+
+
 
               for(var concept in precs[p]['concepts']){
                 if(precs[p]['concepts'][concept]['ancestor_name'] === cond){
